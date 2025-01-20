@@ -125,6 +125,7 @@ namespace ego_planner
     exec_timer_.stop(); // To avoid blockage
 	
 	int ppppp=1; 
+	int qqqq=2; 
     static int fsm_num = 0;
     fsm_num++;
     if (fsm_num == 100)

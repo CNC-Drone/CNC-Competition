@@ -183,6 +183,7 @@ namespace ego_planner
       const bool flag_polyInit, const bool flag_randomPolyTraj,
       const bool use_formation, const bool have_local_traj)
   {
+    int fufufu=99;
     static int count = 0;
 
     printf("\033[47;30m\n[drone %d replan %d]==============================================\033[0m\n",

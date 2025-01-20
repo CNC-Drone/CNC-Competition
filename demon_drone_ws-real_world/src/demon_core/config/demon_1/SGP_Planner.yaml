@@ -1,0 +1,101 @@
+%YAML:1.0
+---
+
+sdf_map/resolution: 0.1   # ESDF地图分辨率
+
+sdf_map/map_size_x: 50.0  # 地图尺寸约束
+sdf_map/map_size_y: 50.0
+sdf_map/map_size_z: 4.0
+
+sdf_map/local_update_range_x: 5.5 # 地图更新的范围，以相机位置作为原点
+sdf_map/local_update_range_y: 5.5
+sdf_map/local_update_range_z: 3.0
+
+sdf_map/obstacles_inflation : 0.0 # 障碍物膨胀
+sdf_map/local_bound_inflate : 0.0   # 栅格边界膨胀
+sdf_map/local_map_margin    : 20.0  # 局部占用图边界预留（20个栅格）
+sdf_map/ground_height       : 4.0   # 地面高度(程序中取-map_size_z_/2)
+
+sdf_map/cx: 316.333122  # 深度相机参数
+sdf_map/cy: 245.268581
+sdf_map/fx: 346.513638
+sdf_map/fy: 346.513638
+
+# 深度图滤波
+sdf_map/use_depth_filter      : 0     # 是否对深度图进行滤波 false or true
+sdf_map/depth_filter_tolerance: 0.15  
+sdf_map/depth_filter_maxdist  : 5.0
+sdf_map/depth_filter_mindist  : 0.2
+sdf_map/depth_filter_margin   : 2
+sdf_map/k_depth_scaling_factor: 1000.0
+sdf_map/skip_pixel            : 1
+
+# local fusion
+sdf_map/p_hit         : 0.65  # 每次占据自增概率 
+sdf_map/p_miss        : 0.35  # 每次空闲自增概率 
+sdf_map/p_min         : 0.12  # 最终能够判定占据的最小值 
+sdf_map/p_max         : 0.90  # 最终能够判定占据的最大值 
+sdf_map/p_occ         : 0.80  # 控制点云显示的，当概率小于logit(x) 则认为没有障碍物 
+sdf_map/min_ray_length: 0.1   # 点云测量边界（程序中没用到） 
+sdf_map/max_ray_length: 5.0   # 点云测量边界，超界会把点云放在边界上 
+
+sdf_map/esdf_slice_height            : 0.3  # ESDF显示高度，用在publishESDF中的高度 
+sdf_map/visualization_truncate_height: 2.4  # 可视化截断高度，用在publishMap中 
+sdf_map/show_occ_time                : 0    # 是否显示占用vex更新时间 
+sdf_map/show_esdf_time               : 0    # 是否显示ESDF更新时间 
+sdf_map/pose_type                    : 1    # 1：订阅相机在世界坐标系下的坐标（推荐），2：订阅机体在世界坐标系下的坐标（程序中需要用变换矩阵获取相机在世界坐标系下的位置） 
+sdf_map/frame_id                     : "world" # 用于发布话题的frame_id 
+
+# edt map 
+edt_map/costmap_alpha: 1.0
+edt_map/costmap_r: 0.2
+edt_map/costmap_d: 1.0
+
+# Astar path searching 
+astar/resolution_astar: 0.1   # A*分辨率 
+astar/margin          : 0.2   # A*搜索安全余量（与障碍物距离小于这个值，则认为在障碍物中,所以其实跟ESDF中的有些冲突） 
+astar/local_margin    : 5.0  # 每次A*规划单轴输出的路径最大路径长度（过长的部分截断），应该是为了减少后续优化的计算量 
+
+# Multi MPCC planning 
+multi_mpcc/Ts       : 0.05  #  低阶/高阶MPC中的时间项，也是定时器中的参数 
+multi_mpcc/Mpcc_opt : 0.01  #  高阶MPC中的运算时长 
+multi_mpcc/show_lowmpc_time   : 0 # 是否显示低阶MPC运算时长 
+multi_mpcc/show_highmpcc_time : 0 # 是否显示高阶MPC运算时长 
+
+# Low MPC 
+low_mpc/alpha1: 5.0 # fu: 平滑项 
+low_mpc/alpha2: 2.0 # fc: 碰撞项 
+low_mpc/alpha3: 1.0 # fs: 轨迹项 
+
+low_mpc/max_iteration_num : 200   # NLopt最大迭代次数 
+low_mpc/max_iteration_time: 0.01  # NLopt最大迭代时间 
+low_mpc/similary_upper_   : 0.5      
+low_mpc/similary_lower_   : -0.5
+low_mpc/dist_0            : 0.7 
+
+# MPCC Optimization 
+optimization/isRecord : 0
+optimization/N        : 40  # 高阶MPC中状态矩阵的阶数，每个Ts,优化总时间N*Ts  
+optimization/K        : 3.0 # EASA中的系数，k越大排斥越大  
+optimization/vel_min  : 0.1 # 优化中的最小速度，防止速度被优化到0  
+optimization/dist_0   : 0.5 # dist_0 : trajectory safe dist 
+optimization/dist_1   : 2.0 # dist_1 : system safe dist 
+
+optimization/alpha1: 5.0    # fs:位置跟踪项  
+optimization/alpha2: 0.001  # fvthe: 速度跟踪项 
+optimization/alpha3: 0.1    # fv: EASA项，在障碍物处迫使改变方向 
+optimization/alpha4: 10.0   # fc: 碰撞项 
+optimization/alpha5: 100.0  # ftheta: 角度项 
+optimization/alpha6: 100.0  # fvel facc: 速度/加速度项 
+optimization/alpha7: 100.0  # fjerk: 最小jerk项 
+optimization/alpha8: 100.0  # 角速度项 
+
+optimization/vel_lower  : -2.0  # 高阶MPC的速度约束  
+optimization/vel_upper  : 2.0
+optimization/acc_lower  : -6.0  # 高阶MPC的加速度约束  
+optimization/acc_upper  : 6.0
+optimization/jerk_lower : -8.0  # 高阶MPC的加加速度约束  
+optimization/jerk_upper : 8.0
+optimization/max_iteration_num  : 200   # 高阶MPC非线性优化最大迭代次数 
+optimization/max_iteration_time : 0.008 # 高阶MPC非线性优化最大迭代时间 
+

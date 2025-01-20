@@ -1,0 +1,4 @@
+%YAML:1.0
+---
+
+if_show_people_detect: 0    # 是否显示视频跟踪

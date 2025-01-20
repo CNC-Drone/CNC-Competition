@@ -1,0 +1,10 @@
+[Unit]
+Description=demon wifi start shell
+After=network.target display-manager.service
+
+[Service]
+ExecStart=/home/khadas/bin/wifi.sh
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

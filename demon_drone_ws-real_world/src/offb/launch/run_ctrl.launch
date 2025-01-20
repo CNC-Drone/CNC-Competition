@@ -1,0 +1,8 @@
+<launch>
+
+	<node pkg="offb" type="offb_node" name="offb" output="screen">
+        	<!-- <remap from="~odom" to="/vicon_imu_ekf_odom" /> -->
+        <rosparam command="load" file="$(find offb)/config/ctrl_param_fpv.yaml" />
+	</node>
+ 
+</launch>

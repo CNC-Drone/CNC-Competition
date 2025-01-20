@@ -1,0 +1,101 @@
+cmake_minimum_required(VERSION 3.10)
+project(demon_core)
+
+
+set(USE_ROS1 ON)  # 是否使用ros1
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--allow-shlib-undefined")
+set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
+
+find_package(Eigen3)
+find_package(PCL REQUIRED)
+find_package(OpenCV REQUIRED)
+
+if(USE_ROS1)  # ros1
+  find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        std_msgs
+        sensor_msgs
+        geometry_msgs
+        image_transport
+        camera_info_manager
+        cv_bridge
+        pcl_conversions
+        tf
+  )
+  catkin_package(
+    INCLUDE_DIRS include
+    LIBRARIES ${PROJECT_NAME}
+  )
+  include_directories(
+        include/ros1_utility
+        ${catkin_INCLUDE_DIRS}
+        ${EIGEN3_INCLUDE_DIR}
+  )
+  set(ros_cpp include/ros1_utility/ros_utility.cpp)
+else()        # ros2
+  find_package(ament_cmake REQUIRED)
+  find_package(rclcpp REQUIRED)
+  find_package(sensor_msgs REQUIRED)
+  find_package(geometry_msgs REQUIRED)
+  find_package(cv_bridge REQUIRED)
+  find_package(nav_msgs REQUIRED)
+  find_package(pcl_conversions REQUIRED)
+  find_package(visualization_msgs REQUIRED)
+  find_package(tf2_ros REQUIRED)
+  include_directories(
+        include/ros2_utility
+  )
+  set(ros_cpp include/ros2_utility/ros_utility.cpp)
+endif()
+
+include_directories(
+  include
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+# 将src目录下的源文件名提取出来，保存在SRC_LIST中
+add_executable(${PROJECT_NAME}_node 
+                src/demon_core.cpp
+                src/demon_core_node.cpp
+                ${ros_cpp}
+)
+target_link_libraries(${PROJECT_NAME}_node
+                      ${OpenCV_LIBS}
+                      ${PCL_LIBRARIES}
+                      stereo_match   
+                      mavlink_manager
+                      SGP_Planner
+                      vins
+                      myudp
+                      myserial
+                      people_detect
+                      rknnrt
+                      so3_controller      
+)
+
+if(USE_ROS1)
+  target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES}) 
+else()
+  ament_target_dependencies(${PROJECT_NAME}_node
+                            rclcpp
+                            sensor_msgs
+                            geometry_msgs
+                            cv_bridge
+                            nav_msgs
+                            pcl_conversions
+                            visualization_msgs
+                            tf2_ros
+  )
+  # 增加可执行文件位置，ros2 run可以找到这个可执行文件
+  install(TARGETS ${PROJECT_NAME}_node
+          DESTINATION lib/${PROJECT_NAME}
+  )
+  install(
+    DIRECTORY config launch meshes include
+    DESTINATION share/${PROJECT_NAME}
+  )
+  ament_package()
+endif()

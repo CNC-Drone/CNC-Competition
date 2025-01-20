@@ -1,0 +1,24 @@
+%YAML:1.0
+---
+
+config_folder: "/home/khadas/demon_packages/demon_drone_ws/src/demon_core/config/demon_1"
+if_use_ros  : 1
+if_use_gps  : 0
+fc_serialPath     : "/dev/ttyFIQ0:1500000"
+
+if_launch_mavlink: 0        # 是否使用自定义的mavlink
+if_launch_vins   : 0        # 是否使用vins定位
+if_show_info: 0             # 是否显示定位信息
+if_launch_planner : 0       # 是否启动路径规划
+if_launch_people_detect: 0  # 是否启动目标识别
+if_show_people_detect: 0    # 是否显示视频跟踪
+
+if_record_video   : 0
+
+udp_address : ""  # 如果不输入IP地址将自动搜索
+#udp_address : "192.168.88.53:14550"  # 如果不输入IP地址将自动搜索
+
+
+
+
+

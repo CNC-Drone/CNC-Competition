@@ -1,0 +1,10 @@
+[Unit]
+Description=demon_core start shell
+After=network.target display-manager.service
+
+[Service]
+ExecStart=/home/khadas/bin/demon_core.sh
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

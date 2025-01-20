@@ -1,0 +1,32 @@
+%YAML:1.0
+---
+
+ctrFreq: 50            # offboard发送周期 
+if_showInfo: 1         # 是否显示数据信息
+if_useSelfApp: 0       # 是否使用自定义无人机位置控制应用层
+pid_xy_p: 1.2          # 位置控制PID，只有useSelfApp为true时生效
+pid_z_p: 1.5
+pid_yaw_p: 1.2
+max_xy_vel: 1.2        # 无人机最大速度，只有useSelfApp为true时生效
+max_z_vel: 1.0
+
+# 订阅
+target_pose_w_sub_topic: /target/pos/world               # 跟踪目标的位置
+
+imu_T_body: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: d
+  data: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+    1.0]
+
+# 标定上写的是cam0 to imu0
+imu_T_cam0: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: d
+  data: [0.00770897, -0.15693554, 0.98757876, 0.13163938, -0.99996058, -0.00556121,
+    0.00692189, 0.0394114, 0.00440584, -0.98759319, -0.15697223, -0.04328347, 0.0,
+    0.0, 0.0, 1.0]
+
+

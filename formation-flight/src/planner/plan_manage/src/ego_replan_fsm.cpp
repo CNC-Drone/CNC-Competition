@@ -126,6 +126,7 @@ namespace ego_planner
 	
 	int ppppp=1; 
 	int qqqq=2; 
+	int textkxj=3;
     static int fsm_num = 0;
     fsm_num++;
     if (fsm_num == 100)

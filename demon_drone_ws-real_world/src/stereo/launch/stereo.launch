@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="stereo" type="stereo_node" name="stereo" output="screen" args="$(find stereo)/launch"> 
+    </node>  
+</launch>

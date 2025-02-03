@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="smart_drone" type="smart_drone_node" name="smart_drone" output="screen"> 
+        <param name="modelPath" type="string" value="$(find object_identify)/models"/>
+    </node>  
+</launch>

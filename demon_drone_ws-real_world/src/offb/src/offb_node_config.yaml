@@ -1,0 +1,43 @@
+use_wgs84: 0 #set1 use wgs84, set 0 use local
+use_mag: 0 # 1 to use
+
+
+#================================1. uuuu =================
+num_point: 4
+
+point_0: [ 0.0, 0.0, 1.5 ]
+point_1: [ 0.0, 10.0, 1.5 ]
+point_2: [ -10.0, 10.0, 1.5 ]
+point_3: [ -10.0, 0.0, 1.5 ]
+
+#num_fly_loop = 1 
+point_wgs84_start_position: [ 30.7517806, 103.9226587, 561934, 1.5 ] #use for loop_node
+point_wgs84_0: [ 30.7517806, 103.9226587, 561934, 1.5 ] # lat, lon, rel_alt 
+point_wgs84_1: [ 30.751555, 103.922804, 561934, 1.5 ]
+point_wgs84_2: [ 30.751651, 103.922865, 561934, 1.5 ]
+
+position_threshold: 0.3
+height_threshold: 0.2
+time_duration: 3.0 # second
+yaw_set: 0.0 # NED the orientation of drone when flying(recommend 0)
+yaw_fix_threshold: 0.00002
+
+#correct positon orientation
+position_orientation_set: 0 #degree
+
+smooth: 3  #6
+
+so3_control_flag: 1
+
+use_camIMU: 0
+T_fi_c: #飞控imu坐标系下cam的位姿(不是cam imu)
+  - [ 0.00338703, -0.08000283,  0.99678888,  0.10019776]
+  - [-0.99995772, -0.00879283,  0.00269208,  0.01425567]
+  - [0.00854922, -0.99675585, -0.08002923, -0.04872154]
+  - [ 0.,          0.,         0.,          1.,        ]
+
+T_i_cam: #vins使用的imu的变换矩阵 T_ic
+  - [-0.0173412 , -0.99871384,  0.04764397,  0.01959101]
+  - [-0.15475161, -0.044396  , -0.98695539, -0.0261009 ]
+  - [ 0.98780121, -0.02448797, -0.1537827 , -0.17158975]
+  - [ 0.,          0.,         0.,          1.,        ]

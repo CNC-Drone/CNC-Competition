@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="object_identify" type="object_identify_node" name="object_identify" output="screen" args="$(find object_identify)/"> 
+    </node>  
+</launch>

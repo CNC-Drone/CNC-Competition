@@ -1,0 +1,26 @@
+<launch>
+    <!--
+    <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find vins)/../config/vins_rviz_config.rviz" />
+    -->
+
+    <!-- estimator
+       <remap from="/vins_estimator/speed" to="/mavros/vision_speed/speed_twist" />
+    -->
+    <node name="vins_estimator" pkg="vins" type="vins_node" output="screen" args="$(find vins)/../config/stereo_imu_config.yaml" >
+       <!-- <remap from="/vins_estimator/camera_pose" to="/mavros/vision_pose/pose" /> -->
+       <!-- <remap from="/vins_estimator/odometry" to="/mavros/odometry/out" /> -->
+    </node>
+
+    <!-- global-fusion with GPS/FC/loopclosure
+    <node name="global_fusion" pkg="global_fusion" type="global_fusion_node" output="screen" >
+        <param name="pub_transform" value="false"/>
+    </node>
+    -->
+
+    <!-- loop_fusion 
+    <node name="loop_fusion" pkg="loop_fusion" type="loop_fusion_node" output="screen" args="$(find vins)/../config/stereo/stereo_imu_config.yaml" >
+        <param name="pub_transform" value="false"/>
+    </node>
+    -->
+
+</launch>

@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="commu_bridge" type="transfer_node" name="transfer" output="screen" args="$(find commu_bridge)/launch/transfer.yaml"> 
+    </node>  
+</launch>

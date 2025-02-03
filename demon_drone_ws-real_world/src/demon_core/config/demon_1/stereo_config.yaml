@@ -1,0 +1,75 @@
+%YAML:1.0
+---
+videoPath: /dev/video60
+pixel_format: MJPEG         # MJPEG, YUYV
+img_buf_len: 1
+img_fps: 10
+depth_fps: 10
+image_width: 1280
+image_height: 480
+if_adverse: 0
+if_cali: 1
+
+if_show_orig: 0
+if_show_rect: 0
+if_show_disp: 0
+if_show_depth: 0
+
+if_subsampling: 0
+brightness: 30        # 亮度 -64~64
+if_auto_exp: 1       # 是否自动曝光，当0的时候，下面的曝光时间参数才有用
+exposure_time: 40    # 曝光时间，一般室内200
+
+
+distortion_coeffs1: !!opencv-matrix
+  rows: 5
+  cols: 1
+  dt: d
+  data: [-0.09234135227603331, 0.07782503252586677, 0.00043179819357031527, 0.00016640490118506447,
+    0]
+camera_matrix1: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [352.113536301952, 0.0, 318.49426895104153, 0.0, 351.59801156735625, 234.57805667024758,
+    0.0, 0.0, 1.0]
+
+distortion_coeffs2: !!opencv-matrix
+  rows: 5
+  cols: 1
+  dt: d
+  data: [-0.07017964605774471, 0.10101648142515249, 0.000780926047073065, -0.00019199728886056585,
+    0]
+camera_matrix2: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [351.3479962326597, 0.0, 309.4114992229651, 0.0, 350.78136066423343, 238.84174402955207,
+    0.0, 0.0, 1.0]
+
+rotation_matrix: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [0.9999794, -0.00072158, 0.00637741, 0.000715, 0.99999921, 0.00103457, -0.00637815,
+    -0.00102998, 0.99997913]
+translation_coeffs: !!opencv-matrix
+  rows: 3
+  cols: 1
+  dt: d
+  data: [-0.06027295, -0.0002306, 0.00053321]
+imu_T_body: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: d
+  data: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+    1.0]
+
+# 标定上写的是cam0 to imu0
+imu_T_cam0: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: d
+  data: [-0.00294629, -0.15472814, 0.98795269, 0.07553519, -0.99990875, 0.01348108,
+    -0.0008706, 0.03507678, -0.01318396, -0.9878651, -0.15475374, -0.05079336, 0.0,
+    0.0, 0.0, 1.0]

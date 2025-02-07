@@ -1,0 +1,33 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/planner/plan_manage/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/uav_simulator/mockamap/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/planner/path_searching/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/planner/plan_env/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/Utils/pose_utils/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/Utils/quadrotor_msgs/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/uav_simulator/so3_control/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/uav_simulator/so3_quadrotor_simulator/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/planner/swarm_graph/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/planner/traj_opt/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/planner/traj_utils/include/**",
+        "/home/gwenivar/IUSC/IUSC-test/CNC-Competition/formation-flight/src/Utils/uav_utils/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

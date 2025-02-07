@@ -203,12 +203,12 @@ namespace ego_planner
         {
           // set the desired formation
           Eigen::Vector3d v0(0,0,0);
-          Eigen::Vector3d v1(1.7321,-1,0);
-          Eigen::Vector3d v2(0,-2,0);
-          Eigen::Vector3d v3(-1.7321,-1,0);
-          Eigen::Vector3d v4(-1.7321,1,0);
-          Eigen::Vector3d v5(0,2,0);
-          Eigen::Vector3d v6(1.7321,1,0);
+          Eigen::Vector3d v1(0.0,-1.5,0);
+          Eigen::Vector3d v2(0,-3,0);
+          Eigen::Vector3d v3(0,-4.5,0);
+          Eigen::Vector3d v4(0,1.5,0);
+          Eigen::Vector3d v5(0,3,0);
+          Eigen::Vector3d v6(0,4.5,0);
 
           swarm_des.push_back(v0);
           swarm_des.push_back(v1);

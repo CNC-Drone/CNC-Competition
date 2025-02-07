@@ -123,10 +123,6 @@ namespace ego_planner
   void EGOReplanFSM::execFSMCallback(const ros::TimerEvent &e)
   {
     exec_timer_.stop(); // To avoid blockage
-	
-	int ppppp=1; 
-	int qqqq=2; 
-	int textkxj=3;
     static int fsm_num = 0;
     fsm_num++;
     if (fsm_num == 100)
@@ -642,7 +638,7 @@ namespace ego_planner
     bool success = false;
     swarm_central_pos_(0) = msg->pose.position.x;
     swarm_central_pos_(1) = msg->pose.position.y;
-    swarm_central_pos_(2) = 0.5;
+    swarm_central_pos_(2) = 2.5;
 
     int id = planner_manager_->pp_.drone_id;
 
@@ -650,6 +646,7 @@ namespace ego_planner
     relative_pos << swarm_relative_pts_[id][0],
                     swarm_relative_pts_[id][1],
                     swarm_relative_pts_[id][2];
+    swarm_scale_ = 1;
     end_pt_ = swarm_central_pos_ + swarm_scale_ * relative_pos;
 
     std::vector<Eigen::Vector3d> one_pt_wps;

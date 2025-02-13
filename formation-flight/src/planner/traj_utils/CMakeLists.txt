@@ -22,6 +22,9 @@ add_message_files(
   DataDisp.msg
   PolyTraj.msg
   Assignment.msg
+  AssignOdom.msg
+  IdealForm.msg
+  ReachFlag.msg
   )
   
 # Generate added messages and services with any dependencies listed here

@@ -26,7 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ego_planner
- CATKIN_DEPENDS plan_env path_searching traj_opt traj_utils 
+ CATKIN_DEPENDS plan_env path_searching traj_opt traj_utils traj_replan
 #  DEPENDS system_lib
 )
 

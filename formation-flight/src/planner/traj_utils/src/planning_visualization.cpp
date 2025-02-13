@@ -150,7 +150,7 @@ namespace ego_planner
   }
 
   void PlanningVisualization::drone_6_odomeCallback(const nav_msgs::OdometryConstPtr &msg){
-    if (formation_size_ <=5 )
+    if (formation_size_ <=6 )
       return;
     
     swarm_odom[6] << msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z;
@@ -203,6 +203,19 @@ namespace ego_planner
 
     case FORMATION_TYPE::REGULAR_HEXAGON:
     {
+      formation_size_ = 6;
+      line_size_      = 5;
+      line_begin_.resize(line_size_);
+      line_end_.resize(line_size_);
+      line_begin_ = {0, 0, 1, 2, 4};
+      line_end_   = {1, 4, 2, 3, 5};
+      
+      break;
+    }
+
+    /*
+    case FORMATION_TYPE::REGULAR_HEXAGON:
+    {
       formation_size_ = 7;
       line_size_      = 12;
       line_begin_.resize(line_size_);
@@ -212,6 +225,7 @@ namespace ego_planner
       
       break;
     }
+    */
     
     default:
       break;

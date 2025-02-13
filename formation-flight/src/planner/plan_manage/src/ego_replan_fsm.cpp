@@ -18,6 +18,8 @@ namespace ego_planner
     flag_escape_emergency_ = true;
     flag_relan_astar_ = false;
     have_local_traj_ = false;
+    have_change_form_ = false;
+    form_type_ = 1;
 
     /*  fsm param  */
     nh.param("fsm/flight_type", target_type_, -1);
@@ -49,11 +51,28 @@ namespace ego_planner
       nh.param("fsm/target" + to_string(i) + "_z", goalpoints_[i][2], -1.0);
     }
 
-    for (int i = 0; i < 7; i++)
+    ideal_formation_.clear();
+
+    for (int i = 0; i < 6; i++)
     {
       nh.param("global_goal/relative_pos_" + to_string(i) + "/x", swarm_relative_pts_[i][0], -1.0);
       nh.param("global_goal/relative_pos_" + to_string(i) + "/y", swarm_relative_pts_[i][1], -1.0);
       nh.param("global_goal/relative_pos_" + to_string(i) + "/z", swarm_relative_pts_[i][2], -1.0);
+      Eigen::Vector3d temp;
+      temp << swarm_relative_pts_[i][0], swarm_relative_pts_[i][1], swarm_relative_pts_[i][2];
+      ideal_formation_.push_back(temp);
+    }
+    for (int i = 0; i < 6; i++)
+    {
+      nh.param("global_goal/rotate_pos_" + to_string(i) + "/x", swarm_rotate_pts_[i][0], -1.0);
+      nh.param("global_goal/rotate_pos_" + to_string(i) + "/y", swarm_rotate_pts_[i][1], -1.0);
+      nh.param("global_goal/rotate_pos_" + to_string(i) + "/z", swarm_rotate_pts_[i][2], -1.0);
+    }
+    for (int i = 0; i < 6; i++)
+    {
+      nh.param("global_goal/vertical_pos_" + to_string(i) + "/x", swarm_vertical_pts_[i][0], -1.0);
+      nh.param("global_goal/vertical_pos_" + to_string(i) + "/y", swarm_vertical_pts_[i][1], -1.0);
+      nh.param("global_goal/vertical_pos_" + to_string(i) + "/z", swarm_vertical_pts_[i][2], -1.0);
     }
 
     nh.param("global_goal/swarm_scale", swarm_scale_, 1.0);
@@ -64,12 +83,19 @@ namespace ego_planner
     planner_manager_->initPlanModules(nh, visualization_);
     planner_manager_->deliverTrajToOptimizer(); // store trajectories
     planner_manager_->setDroneIdtoOpt();
-
+    
     /* callback */
     exec_timer_ = nh.createTimer(ros::Duration(0.01), &EGOReplanFSM::execFSMCallback, this);
     safety_timer_ = nh.createTimer(ros::Duration(0.05), &EGOReplanFSM::checkCollisionCallback, this);
+    checkpoint_timer_ = nh.createTimer(ros::Duration(0.1), &EGOReplanFSM::checkPointCallback, this);
 
     odom_sub_ = nh.subscribe("odom_world", 1, &EGOReplanFSM::odometryCallback, this);
+    assign_sub_ = nh.subscribe("/assignodom_pub", 30, &EGOReplanFSM::assignodomCallback, this);
+    assign_pub_ = nh.advertise<traj_utils::AssignOdom>("/assignodom_sub", 10);
+    idealform_sub_ = nh.subscribe("/replan_idealform", 30, &EGOReplanFSM::idealformCallback, this);
+    reach_ideal_sub_ = nh.subscribe("/drone_reach_all", 10, &EGOReplanFSM::reachidealCallback, this);
+    reach_ideal_pub_ = nh.advertise<traj_utils::ReachFlag>("/drone_reach_ideal", 5);
+
 
     broadcast_ploytraj_pub_ = nh.advertise<traj_utils::PolyTraj>("planning/broadcast_traj_send", 10);
     broadcast_ploytraj_sub_ = nh.subscribe<traj_utils::PolyTraj>("planning/broadcast_traj_recv", 100,
@@ -227,6 +253,15 @@ namespace ego_planner
         {
           have_target_ = false;
           have_local_traj_ = false;
+          if (have_change_form_)
+          {
+            traj_utils::ReachFlag msg;
+            msg.form_type = form_type_;
+            msg.drone_id = planner_manager_->pp_.drone_id;
+            reach_ideal_pub_.publish(msg);
+          }
+          
+          have_change_form_ = false;
 
           /* The navigation task completed */
           changeFSMExecState(WAIT_TARGET, "FSM");
@@ -277,6 +312,47 @@ namespace ego_planner
   force_return:;
     exec_timer_.start();
   }
+
+  void EGOReplanFSM::callchangeForm(const std::vector<Eigen::Vector3d> &form, const int &form_type)
+  {
+    bool success = planner_manager_->changeDesform(form, form_type);
+    if(success)
+      ROS_WARN("Change formation success!!! ");
+    else 
+      ROS_ERROR("Change formation failed!!! ");
+  }
+
+  void EGOReplanFSM::reachidealCallback(const std_msgs::BoolConstPtr &msg)
+  {
+    if (msg->data)
+    {
+      switch (form_type_)
+      {
+      case 2:
+        cout << "Triggered!" << endl;
+        init_pt_ = odom_pos_;
+        swarm_central_pos_(0) = -1;
+        swarm_central_pos_(1) = -2.5;
+        swarm_central_pos_(2) = 2.5;
+        SetmanualWaypoint();
+        break;
+
+      case 3:
+        cout << "Triggered!" << endl;
+        
+        init_pt_ = odom_pos_;
+        swarm_central_pos_(0) = -25;
+        swarm_central_pos_(1) = 0;
+        swarm_central_pos_(2) = 2.5;
+        SetmanualWaypoint();
+        
+        break;
+
+      default:
+        break;
+      }
+    }
+}
 
   void EGOReplanFSM::checkCollisionCallback(const ros::TimerEvent &e)
   {
@@ -374,6 +450,62 @@ namespace ego_planner
     }
   }
 
+  void EGOReplanFSM::idealformCallback(const traj_utils::IdealFormConstPtr &msg)
+  {
+    std::vector<Eigen::Vector3d> form;
+    for (const auto& point : msg->form)
+    {
+      Eigen::Vector3d vec(point.x, point.y, point.z);
+      form.push_back(vec);
+    }
+    int form_t = msg->form_type;
+    callchangeForm(form, form_t);
+    ideal_formation_ = form;
+  }
+
+  void EGOReplanFSM::checkPointCallback(const ros::TimerEvent &e)
+  { 
+    bool success = false;
+    int id = planner_manager_->pp_.drone_id;
+    if (form_type_ == 1 && odom_pos_(0) <= 9.0 && odom_pos_(0) >= 5.0)
+      success = true;
+    else if (form_type_ == 2 && odom_pos_(0) <= 2.5 + ideal_formation_[id](0) && odom_pos_(0) >= 1.0 + ideal_formation_[id](0))
+    {
+      success = true;
+      ROS_WARN("Enter third situation!");
+    }
+    
+    if(success)
+    {
+      callEmergencyStop(odom_pos_);
+      
+      have_target_ = false;
+      have_local_traj_ = false;
+
+      /* The navigation task completed */
+      changeFSMExecState(WAIT_TARGET, "FSM");
+
+      result_file_ << planner_manager_->pp_.drone_id << "\t" << (ros::Time::now() - planner_manager_->global_start_time_).toSec() << "\t" << planner_manager_->average_plan_time_ << "\n";
+
+      printf("\033[47;30m\n[drone %d reached goal]==============================================\033[0m\n",
+              planner_manager_->pp_.drone_id);
+
+      traj_utils::AssignOdom msg;
+      msg.x = odom_pos_(0);
+      msg.y = odom_pos_(1);
+      msg.z = odom_pos_(2);
+      msg.num = planner_manager_->pp_.drone_id;
+      msg.formation_type = form_type_;
+      assign_pub_.publish(msg);
+
+      form_type_ ++;
+
+      goto force_return;
+    }
+    force_return:;
+    exec_timer_.start();
+  }
+
   void EGOReplanFSM::triggerCallback(const geometry_msgs::PoseStampedPtr &msg)
   {
     have_trigger_ = true;
@@ -448,6 +580,66 @@ namespace ego_planner
     odom_orient_.z() = msg->pose.pose.orientation.z;
 
     have_odom_ = true;
+  }
+
+  void EGOReplanFSM::assignodomCallback(const traj_utils::AssignOdomConstPtr &msg)
+  {
+    int drone_id = msg->num;
+    if (drone_id == planner_manager_->pp_.drone_id)
+    {
+      ROS_WARN("Drone %d received assign!Endpt is %lf, %lf, %lf", drone_id, msg->x, msg->y, msg->z);
+      end_pt_ << msg->x, msg->y, msg->z;
+      have_change_form_ = true;
+    }
+    else 
+      return;
+
+
+    cout << "Triggered!" << endl;
+    init_pt_ = odom_pos_;
+
+    bool success = false;
+
+    int id = planner_manager_->pp_.drone_id;
+
+    std::vector<Eigen::Vector3d> one_pt_wps;
+    one_pt_wps.push_back(end_pt_);
+
+    success = planner_manager_->planGlobalTrajWaypoints(
+        odom_pos_, odom_vel_, Eigen::Vector3d::Zero(),
+        one_pt_wps, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
+
+    visualization_->displayGoalPoint(end_pt_, Eigen::Vector4d(0, 0.5, 0.5, 1), 0.3, 0);
+
+    if (success)
+    {
+      // display
+      constexpr double step_size_t = 0.1;
+      int i_end = floor(planner_manager_->traj_.global_traj.duration / step_size_t);
+      vector<Eigen::Vector3d> gloabl_traj(i_end);
+      for (int i = 0; i < i_end; i++)
+      {
+        gloabl_traj[i] = planner_manager_->traj_.global_traj.traj.getPos(i * step_size_t);
+      }
+
+      end_vel_.setZero();
+      have_target_ = true;
+      have_new_target_ = true;
+
+      // FSM 
+      if (exec_state_ == WAIT_TARGET)
+        changeFSMExecState(SEQUENTIAL_START, "TRIG");
+      else if (exec_state_ == EXEC_TRAJ)
+        changeFSMExecState(REPLAN_TRAJ, "TRIG");
+
+      // visualization_->displayGoalPoint(end_pt_, Eigen::Vector4d(1, 0, 0, 1), 0.3, 0);
+      visualization_->displayGlobalPathList(gloabl_traj, 0.1, 0);
+    }
+    else
+    {
+      ROS_ERROR("Unable to generate global trajectory!");
+    }
+    
   }
 
   void EGOReplanFSM::RecvBroadcastPolyTrajCallback(const traj_utils::PolyTrajConstPtr &msg)
@@ -627,6 +819,79 @@ namespace ego_planner
     }
   }
   
+  void EGOReplanFSM::SetmanualWaypoint()
+  {
+    bool success = false;
+
+    int id = planner_manager_->pp_.drone_id;
+
+    Eigen::Vector3d relative_pos;
+    relative_pos << ideal_formation_[id](0),
+                    ideal_formation_[id](1),
+                    ideal_formation_[id](2);
+    //relative_pos << swarm_relative_pts_[id][0],
+    //                swarm_relative_pts_[id][1],
+    //                swarm_relative_pts_[id][2];
+    swarm_scale_ = 1;
+    end_pt_ = swarm_central_pos_ + swarm_scale_ * relative_pos;
+    
+    std::vector<Eigen::Vector3d> one_pt_wps;
+    one_pt_wps.push_back(end_pt_);
+
+
+    success = planner_manager_->planGlobalTrajWaypoints(
+        odom_pos_, odom_vel_, Eigen::Vector3d::Zero(),
+        one_pt_wps, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
+
+    visualization_->displayGoalPoint(end_pt_, Eigen::Vector4d(0, 0.5, 0.5, 1), 0.3, 0);
+
+    if (success)
+    {
+      // display 
+      constexpr double step_size_t = 0.1;
+      int i_end = floor(planner_manager_->traj_.global_traj.duration / step_size_t);
+      vector<Eigen::Vector3d> gloabl_traj(i_end);
+      for (int i = 0; i < i_end; i++)
+      {
+        gloabl_traj[i] = planner_manager_->traj_.global_traj.traj.getPos(i * step_size_t);
+      }
+
+      end_vel_.setZero();
+      have_target_ = true;
+      have_new_target_ = true;
+
+      // FSM 
+      if (exec_state_ == WAIT_TARGET)
+        changeFSMExecState(SEQUENTIAL_START, "TRIG");
+      else if (exec_state_ == EXEC_TRAJ)
+        changeFSMExecState(REPLAN_TRAJ, "TRIG");
+
+      // visualization_->displayGoalPoint(end_pt_, Eigen::Vector4d(1, 0, 0, 1), 0.3, 0);
+      visualization_->displayGlobalPathList(gloabl_traj, 0.1, 0);
+    }
+    else
+    {
+      ROS_ERROR("Unable to generate global trajectory!");
+    }
+  }
+
+  void EGOReplanFSM::formationWaypointCallback(const geometry_msgs::PoseStampedPtr &msg)
+  {
+    if (msg->pose.position.z < -0.1)
+      return;
+
+    cout << "Triggered!" << endl;
+    init_pt_ = odom_pos_;
+
+    swarm_central_pos_(0) = msg->pose.position.x;
+    swarm_central_pos_(1) = msg->pose.position.y;
+    swarm_central_pos_(2) = 2.5;
+
+    SetmanualWaypoint();
+    
+  }
+
+  /*
   void EGOReplanFSM::formationWaypointCallback(const geometry_msgs::PoseStampedPtr &msg)
   {
     if (msg->pose.position.z < -0.1)
@@ -661,7 +926,7 @@ namespace ego_planner
 
     if (success)
     {
-      /*** display ***/
+      // display 
       constexpr double step_size_t = 0.1;
       int i_end = floor(planner_manager_->traj_.global_traj.duration / step_size_t);
       vector<Eigen::Vector3d> gloabl_traj(i_end);
@@ -674,7 +939,7 @@ namespace ego_planner
       have_target_ = true;
       have_new_target_ = true;
 
-      /*** FSM ***/
+      // FSM 
       if (exec_state_ == WAIT_TARGET)
         changeFSMExecState(SEQUENTIAL_START, "TRIG");
       else if (exec_state_ == EXEC_TRAJ)
@@ -688,6 +953,8 @@ namespace ego_planner
       ROS_ERROR("Unable to generate global trajectory!");
     }
   }
+  */
+
   void EGOReplanFSM::planGlobalTrajbyGivenWps()
   {
     std::vector<Eigen::Vector3d> wps;
@@ -807,7 +1074,7 @@ namespace ego_planner
         desired_start_pt, desired_start_vel, desired_start_acc,
         desired_start_time, local_target_pt_, local_target_vel_,
         (have_new_target_ || flag_use_poly_init),
-        flag_randomPolyTraj, use_formation, have_local_traj_);
+        flag_randomPolyTraj, use_formation, have_local_traj_, have_change_form_);
 
     have_new_target_ = false;
 

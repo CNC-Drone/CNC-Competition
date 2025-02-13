@@ -9,6 +9,7 @@
 #include <ros/ros.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Int32.h>
 #include <vector>
 #include <visualization_msgs/Marker.h>
 
@@ -20,6 +21,9 @@
 #include <traj_utils/planning_visualization.h>
 #include <traj_utils/PolyTraj.h>
 #include <traj_utils/Assignment.h>
+#include <traj_utils/AssignOdom.h>
+#include <traj_utils/IdealForm.h>
+#include <traj_utils/ReachFlag.h>
 
 #include <fstream>
 #include <iostream>
@@ -57,6 +61,7 @@ namespace ego_planner
 
     /* parameters */
     int target_type_; // 1 mannual select, 2 hard code
+    int form_type_;
     double no_replan_thresh_, replan_thresh_;
     double waypoints_[50][3];
     int waypoint_num_;
@@ -72,10 +77,12 @@ namespace ego_planner
      // global goal setting for swarm
     Eigen::Vector3d swarm_central_pos_;
     double swarm_relative_pts_[50][3];
+    double swarm_rotate_pts_[50][3];
+    double swarm_vertical_pts_[50][3];
     double swarm_scale_;
 
     /* planning data */
-    bool have_trigger_, have_target_, have_odom_, have_new_target_, have_recv_pre_agent_, have_local_traj_;
+    bool have_trigger_, have_target_, have_odom_, have_new_target_, have_recv_pre_agent_, have_local_traj_, have_change_form_;
     FSM_EXEC_STATE exec_state_;
     int continously_called_times_{0};
 
@@ -85,6 +92,7 @@ namespace ego_planner
     Eigen::Vector3d init_pt_, start_pt_, start_vel_, start_acc_, start_yaw_; // start state
     Eigen::Vector3d end_pt_, end_vel_;                                       // goal state
     Eigen::Vector3d local_target_pt_, local_target_vel_;                     // local target state
+    std::vector<Eigen::Vector3d> ideal_formation_;
     int current_wp_;
 
     bool flag_escape_emergency_;
@@ -94,11 +102,11 @@ namespace ego_planner
 
     /* ROS utils */
     ros::NodeHandle node_;
-    ros::Timer exec_timer_, safety_timer_;
-    ros::Subscriber waypoint_sub_, odom_sub_, swarm_trajs_sub_, broadcast_bspline_sub_, trigger_sub_, assignment_sub_;
-    ros::Publisher replan_pub_, new_pub_, poly_traj_pub_, data_disp_pub_, swarm_trajs_pub_, broadcast_bspline_pub_;
+    ros::Timer exec_timer_, safety_timer_, checkpoint_timer_;
+    ros::Subscriber waypoint_sub_, odom_sub_, swarm_trajs_sub_, broadcast_bspline_sub_, trigger_sub_, assignment_sub_, assign_sub_, idealform_sub_, reach_ideal_sub_;
+    ros::Publisher replan_pub_, new_pub_, poly_traj_pub_, data_disp_pub_, swarm_trajs_pub_, broadcast_bspline_pub_, assign_pub_;
     ros::Publisher broadcast_ploytraj_pub_;
-    ros::Publisher reached_pub_, start_pub_;
+    ros::Publisher reached_pub_, start_pub_, reach_ideal_pub_;
     ros::Subscriber central_goal;
     ros::Subscriber broadcast_ploytraj_sub_;
     // result file and file name
@@ -109,6 +117,10 @@ namespace ego_planner
     bool callEmergencyStop(Eigen::Vector3d stop_pos);                          // front-end and back-end method
     bool planFromGlobalTraj(const int trial_times = 1);
     bool planFromLocalTraj(bool flag_use_poly_init, bool use_formation);
+    void callchangeForm(const std::vector<Eigen::Vector3d> &form, const int &form_type);
+    void SetmanualWaypoint();
+    bool frontEndPathSearching();
+    bool checkCollision();
     
     /* return value: std::pair< Times of the same state be continuously called, current continuously called state > */
     void changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call);
@@ -121,14 +133,17 @@ namespace ego_planner
     /* ROS functions */
     void execFSMCallback(const ros::TimerEvent &e);
     void checkCollisionCallback(const ros::TimerEvent &e);
+    void checkPointCallback(const ros::TimerEvent &e);
     void waypointCallback(const geometry_msgs::PoseStampedPtr &msg);
     void triggerCallback(const geometry_msgs::PoseStampedPtr &msg);
     void odometryCallback(const nav_msgs::OdometryConstPtr &msg);
+    void assignodomCallback(const traj_utils::AssignOdomConstPtr &msg);
+    void idealformCallback(const traj_utils::IdealFormConstPtr &msg);
     void RecvBroadcastPolyTrajCallback(const traj_utils::PolyTrajConstPtr &msg);
     void polyTraj2ROSMsg(traj_utils::PolyTraj &msg);
     void formationWaypointCallback(const geometry_msgs::PoseStampedPtr &msg);
-    bool frontEndPathSearching();
-    bool checkCollision();
+    void reachidealCallback(const std_msgs::BoolConstPtr &msg);
+    
 
   public:
     EGOReplanFSM(/* args */)

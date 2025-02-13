@@ -181,7 +181,7 @@ namespace ego_planner
       const Eigen::Vector3d &start_pt, const Eigen::Vector3d &start_vel, const Eigen::Vector3d &start_acc,
       const double trajectory_start_time, const Eigen::Vector3d &local_target_pt, const Eigen::Vector3d &local_target_vel,
       const bool flag_polyInit, const bool flag_randomPolyTraj,
-      const bool use_formation, const bool have_local_traj)
+      const bool use_formation, const bool have_local_traj, const bool &change_form)
   {
     static int count = 0;
 
@@ -232,9 +232,10 @@ namespace ego_planner
     Eigen::Matrix<double, 3, 3> headState, tailState;
     headState << initTraj.getJuncPos(0), initTraj.getJuncVel(0), initTraj.getJuncAcc(0);
     tailState << initTraj.getJuncPos(PN), initTraj.getJuncVel(PN), initTraj.getJuncAcc(PN);
+    ROS_WARN("Change form now is %d", change_form);
     flag_success = ploy_traj_opt_->OptimizeTrajectory_lbfgs(headState, tailState,
                                                             innerPts, initTraj.getDurations(),
-                                                            cstr_pts, use_formation);
+                                                            cstr_pts, use_formation, change_form);
  
     t_opt = ros::Time::now() - t_start;
 
@@ -272,6 +273,14 @@ namespace ego_planner
 
     // success. YoY
     continous_failures_count_ = 0;
+    return true;
+  }
+
+  bool EGOPlannerManager::changeDesform(const std::vector<Eigen::Vector3d> &form, const int &form_type)
+  {
+    if (form_type < 0 || form_type > 3)
+      return false;
+    ploy_traj_opt_->updatePersonalFormation(form);
     return true;
   }
 

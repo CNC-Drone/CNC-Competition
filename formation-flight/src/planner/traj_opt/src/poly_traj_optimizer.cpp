@@ -7,13 +7,15 @@ namespace ego_planner
   bool PolyTrajOptimizer::OptimizeTrajectory_lbfgs(
       const Eigen::MatrixXd &iniState, const Eigen::MatrixXd &finState,
       const Eigen::MatrixXd &initInnerPts, const Eigen::VectorXd &initT,
-      Eigen::MatrixXd &optimal_points, const bool use_formation)
+      Eigen::MatrixXd &optimal_points, const bool use_formation, const bool &have_change_form)
   {
     if (initInnerPts.cols() != (initT.size() - 1))
     {
       ROS_ERROR("initInnerPts.cols() != (initT.size()-1)");
       return false;
     }
+
+    change_form_flag_ = have_change_form;
 
     t_now_ = ros::Time::now().toSec();
     piece_num_ = initT.size();
@@ -290,7 +292,7 @@ namespace ego_planner
           costs(1) += omg * step * costp;
         }
         // formation
-        if (use_formation_)
+        if (use_formation_ && !change_form_flag_)
         {
           if (swarmGraphGradCostP(i_dp, t + step * j, pos, vel, gradp, gradt, grad_prev_t, costp))
           {
@@ -305,6 +307,7 @@ namespace ego_planner
             costs(2) += omg * step * costp;
           }
         }
+        
         // feasibility
         if (feasibilityGradCostV(vel, gradv, costv))
         {
@@ -431,7 +434,6 @@ namespace ego_planner
       swarm_graph_pos[id] = swarm_p;
       swarm_graph_vel[id] = swarm_v;
     }
-
     swarm_graph_->updateGraph(swarm_graph_pos);
 
     // calculate the swarm graph cost and gradp
@@ -753,6 +755,18 @@ namespace ego_planner
     // set the formation type
     swarm_graph_.reset(new SwarmGraph);
     setDesiredFormation(formation_type_);
+  }
+
+  void PolyTrajOptimizer::updateDesiredFormation(const int &formation_type)
+  {
+    swarm_graph_.reset(new SwarmGraph);
+    setDesiredFormation(formation_type_);
+  }
+
+  void PolyTrajOptimizer::updatePersonalFormation(const std::vector<Eigen::Vector3d> &swarm_des)
+  {
+    swarm_graph_.reset(new SwarmGraph);
+    setPersonalFormation(swarm_des);
   }
 
   void PolyTrajOptimizer::setEnvironment(const GridMap::Ptr &map)

@@ -65,7 +65,9 @@ namespace ego_planner
     enum FORMATION_TYPE
     {
       NONE_FORMATION        = 0,
-      REGULAR_HEXAGON       = 1
+      REGULAR_HEXAGON       = 1,
+      ROTATE_FORMATION      = 2,
+      VERTICAL_ONE          = 3
     };
 
     /* optimization parameters */
@@ -84,6 +86,8 @@ namespace ego_planner
     int    formation_size_;
     bool   use_formation_ = true;
     bool   is_other_assigning_ = false;
+
+    bool change_form_flag_ = false;
 
     double t_now_;
 
@@ -110,14 +114,94 @@ namespace ego_planner
     /* main planning API */
     bool OptimizeTrajectory_lbfgs(const Eigen::MatrixXd &iniState, const Eigen::MatrixXd &finState,
                             const Eigen::MatrixXd &initInnerPts, const Eigen::VectorXd &initT,
-                            Eigen::MatrixXd &optimal_points, const bool use_formation);
+                            Eigen::MatrixXd &optimal_points, const bool use_formation, const bool &have_change_form);
                                             
     void astarWithMinTraj( const Eigen::MatrixXd &iniState, 
                            const Eigen::MatrixXd &finState,
                            std::vector<Eigen::Vector3d> &simple_path,
                            Eigen::MatrixXd &ctl_points,
                            poly_traj::MinJerkOpt &frontendMJ);
-  
+
+    void updateDesiredFormation(const int &formation_type);
+
+    void updatePersonalFormation(const std::vector<Eigen::Vector3d> &swarm_des);
+
+    void setPersonalFormation(const std::vector<Eigen::Vector3d> &swarm_des)
+    {
+      formation_size_ = swarm_des.size();
+      swarm_graph_->setDesiredForm(swarm_des);
+    }
+
+    void setDesiredFormation(int type){
+      std::vector<Eigen::Vector3d> swarm_des;
+      switch (type)
+      {
+        case FORMATION_TYPE::NONE_FORMATION :
+        {
+          use_formation_  = false;
+          formation_size_ = 0;
+          break;
+        }
+
+        case FORMATION_TYPE::REGULAR_HEXAGON :
+        {
+          // set the desired formation
+          Eigen::Vector3d v0(0,0,0);
+          Eigen::Vector3d v1(0.0,-1.5,0);
+          Eigen::Vector3d v2(0,-3,0);
+          Eigen::Vector3d v3(0,-4.5,0);
+          Eigen::Vector3d v4(0,1.5,0);
+          Eigen::Vector3d v5(0,3,0);
+          //Eigen::Vector3d v6(0,4.5,0);
+
+          swarm_des.push_back(v0);
+          swarm_des.push_back(v1);
+          swarm_des.push_back(v2);
+          swarm_des.push_back(v3);
+          swarm_des.push_back(v4);
+          swarm_des.push_back(v5);
+          //swarm_des.push_back(v6);
+
+          formation_size_ = swarm_des.size();
+          // construct the desired swarm graph
+          swarm_graph_->setDesiredForm(swarm_des);
+          break;
+        }
+
+        case FORMATION_TYPE::ROTATE_FORMATION :
+        {
+          Eigen::Vector3d v0(0,0,0);
+          Eigen::Vector3d v1(0,5,0);
+          Eigen::Vector3d v2(1,5,0);
+          Eigen::Vector3d v3(1,0,0);
+          Eigen::Vector3d v4(0,-5,0);
+          Eigen::Vector3d v5(1,-5,0);
+
+          formation_size_ = swarm_des.size();
+          // construct the desired swarm graph
+          swarm_graph_->setDesiredForm(swarm_des);
+          break;
+        }
+
+        case FORMATION_TYPE::VERTICAL_ONE :
+        {
+          Eigen::Vector3d v0(0,0,0);
+          Eigen::Vector3d v1(1,0,0);
+          Eigen::Vector3d v2(2,0,0);
+          Eigen::Vector3d v3(3,0,0);
+          Eigen::Vector3d v4(4,0,0);
+          Eigen::Vector3d v5(5,0,0);
+
+          formation_size_ = swarm_des.size();
+          // construct the desired swarm graph
+          swarm_graph_->setDesiredForm(swarm_des);
+          break;
+        }
+
+        default:
+          break;
+      }
+    } 
   
   
   private:
@@ -188,46 +272,6 @@ namespace ego_planner
 
     bool getFormationPos(std::vector<Eigen::Vector3d> &swarm_graph_pos, Eigen::Vector3d pos);
 
-    void setDesiredFormation(int type){
-      std::vector<Eigen::Vector3d> swarm_des;
-      switch (type)
-      {
-        case FORMATION_TYPE::NONE_FORMATION :
-        {
-          use_formation_  = false;
-          formation_size_ = 0;
-          break;
-        }
-
-        case FORMATION_TYPE::REGULAR_HEXAGON :
-        {
-          // set the desired formation
-          Eigen::Vector3d v0(0,0,0);
-          Eigen::Vector3d v1(0.0,-1.5,0);
-          Eigen::Vector3d v2(0,-3,0);
-          Eigen::Vector3d v3(0,-4.5,0);
-          Eigen::Vector3d v4(0,1.5,0);
-          Eigen::Vector3d v5(0,3,0);
-          Eigen::Vector3d v6(0,4.5,0);
-
-          swarm_des.push_back(v0);
-          swarm_des.push_back(v1);
-          swarm_des.push_back(v2);
-          swarm_des.push_back(v3);
-          swarm_des.push_back(v4);
-          swarm_des.push_back(v5);
-          swarm_des.push_back(v6);
-
-          formation_size_ = swarm_des.size();
-          // construct the desired swarm graph
-          swarm_graph_->setDesiredForm(swarm_des);
-          break;
-        }
-
-        default:
-          break;
-      }
-    }
 
   public:
 

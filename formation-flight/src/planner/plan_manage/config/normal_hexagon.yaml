@@ -3,13 +3,22 @@
 global_goal:
   swarm_central_pos: {x: -25.0, y: 0.0, z: 2.5}
   swarm_scale : 2.0
+  
+  #relative_pos_0 : {x: 0.0, y: 0.0, z: 0}
+  #relative_pos_1 : {x: -1.5, y: 0.0, z: 0}
+  #relative_pos_2 : {x: -3.0, y: 0.0, z: 0}
+  #relative_pos_3 : {x: -4.5, y: 0.0, z: 0} 
+  #relative_pos_4 : {x: 1.5, y: 0.0, z: 0}
+  #relative_pos_5 : {x: 3.0, y: 0.0, z: 0}
+  #relative_pos_6 : {x: 4.5, y: 0.0, z: 0} 
   relative_pos_0 : {x: 0.0, y: 0.0, z: 0}
   relative_pos_1 : {x: 0.0, y: -1.5, z: 0}
   relative_pos_2 : {x: 0.0, y: -3.0, z: 0}
   relative_pos_3 : {x: 0.0, y: -4.5, z: 0} 
   relative_pos_4 : {x: 0.0, y: 1.5, z: 0}
   relative_pos_5 : {x: 0.0, y: 3.0, z: 0}
-  relative_pos_6 : {x: 0.0, y: 4.5, z: 0} 
+  #relative_pos_6 : {x: 0.0, y: 4.5, z: 0} 
+  
   #relative_pos_1 : {x: 1.7321, y: -1.0, z: 0.0}
   #relative_pos_2 : {x: 0.0, y: -2.0, z: 0.0}
   #relative_pos_3 : {x: -1.7321, y: -1.0, z: 0.0} 
@@ -17,6 +26,19 @@ global_goal:
   #relative_pos_5 : {x: 0.0, y: 2.0, z: 0.0}
   #relative_pos_6 : {x: 1.7321, y: 1.0, z: 0.0} 
   # relative_pos_6 : {x: 0, y: 0, z: 0.0} 
+  rotate_pos_0   : {x: 0.0, y: 0.0, z: 0}
+  rotate_pos_1   : {x: 0.0, y: 5.0, z: 0}
+  rotate_pos_2   : {x: 1.5, y: 5.0, z: 0}
+  rotate_pos_3   : {x: 1.5, y: 0.0, z: 0}
+  rotate_pos_4   : {x: 0.0, y: -5.0, z: 0}
+  rotate_pos_5   : {x: 1.5, y: -5.0, z: 0}
+  vertical_pos_0 : {x: 0.0, y: 0.0, z: 0}
+  vertical_pos_1 : {x: 1.2, y: 0.0, z: 0}
+  vertical_pos_2 : {x: 2.4, y: 0.0, z: 0}
+  vertical_pos_3 : {x: 3.6, y: 0.0, z: 0}
+  vertical_pos_4 : {x: 4.8, y: 0.0, z: 0}
+  vertical_pos_5 : {x: 6.0, y: 0.0, z: 0}
+
 
 # map_size_x          : 70.0
 # map_size_y          : 30.0

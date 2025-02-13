@@ -14,7 +14,7 @@
     </include>
 
     
-    <node pkg ="map_generator" name ="map_pub" type ="map_pub" output = "screen" args="$(find map_generator)/resource/angle3.pcd"/>   
+    <node pkg ="map_generator" name ="map_pub" type ="map_pub" output = "screen" args="$(find map_generator)/resource/test1.pcd"/>   
     
 
     <!-- map -->
@@ -43,6 +43,9 @@
         <param name="min_distance" value="0.8"/>         
     </node>
     -->
+    <node pkg="traj_replan" name="drone_traj_replan_node" type="traj_replan_node" output="screen">
+        <rosparam file="$(find ego_planner)/config/normal_hexagon.yaml"/>
+    </node>
 
     <!-- swarm robots -->
     <include file="$(find ego_planner)/launch/run_in_sim.launch">
@@ -155,6 +158,7 @@
 
     </include>
 
+    <!--
     <include file="$(find ego_planner)/launch/run_in_sim.launch">
         <arg name="drone_id" value="6"/>
 
@@ -171,5 +175,6 @@
         <arg name="map_size_z"              value="$(arg map_size_z)"/>
         <arg name="odom_topic"              value="$(arg odom_topic)"/>
     </include>
+    -->
 
   </launch>
